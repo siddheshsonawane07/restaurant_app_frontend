@@ -3,7 +3,7 @@ import { auth } from './firebase';
 import { API_BASE_URL } from '../utils/constants';
 
 /**
- * Always fetch fresh token
+ * Always fetch a fresh Firebase ID token
  */
 const getAuthHeader = async () => {
   const user = auth.currentUser;
@@ -34,6 +34,7 @@ const handleError = (error) => {
 };
 
 export const api = {
+  // CUSTOMER – MENU
   getMenu: async (category = null) => {
     try {
       const url = new URL(`${API_BASE_URL}/api/customer/menu`);
@@ -48,6 +49,7 @@ export const api = {
     }
   },
 
+  // ADMIN – INGREDIENTS
   getIngredients: async () => {
     try {
       const response = await fetch(
@@ -83,6 +85,43 @@ export const api = {
     }
   },
 
+  updateIngredient: async (ingredientId, data) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/ingredients/${ingredientId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(await getAuthHeader()),
+          },
+          body: JSON.stringify(data),
+        }
+      );
+      return await handleResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  deleteIngredient: async (ingredientId) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/ingredients/${ingredientId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            ...(await getAuthHeader()),
+          },
+        }
+      );
+      return await handleResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  // ADMIN – DISHES
   addDish: async (data) => {
     try {
       const response = await fetch(
@@ -94,6 +133,42 @@ export const api = {
             ...(await getAuthHeader()),
           },
           body: JSON.stringify(data),
+        }
+      );
+      return await handleResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  updateDish: async (dishId, data) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/dishes/${dishId}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(await getAuthHeader()),
+          },
+          body: JSON.stringify(data),
+        }
+      );
+      return await handleResponse(response);
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
+  deleteDish: async (dishId) => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/dishes/${dishId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            ...(await getAuthHeader()),
+          },
         }
       );
       return await handleResponse(response);

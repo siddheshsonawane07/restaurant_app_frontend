@@ -1,45 +1,57 @@
-import { useState, useEffect } from 'react';
-import { Navbar } from '../components/Navbar';
-import { DishCard } from '../components/DishCard';
-import { Cart } from '../components/Cart';
-import { api } from '../services/api';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import { Navbar } from "../components/Navbar";
+import { DishCard } from "../components/DishCard";
+import { Cart } from "../components/Cart";
+import { api } from "../services/api";
+import toast from "react-hot-toast";
 
 export const Menu = () => {
   const [menu, setMenu] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [allMenu, setAllMenu] = useState([]);
+
 
   useEffect(() => {
-    fetchMenu();
+    fetchAllMenu();
   }, [category]);
 
-  const fetchMenu = async () => {
+  const fetchAllMenu = async () => {
     setLoading(true);
     try {
-      const response = await api.getMenu(category || null);
+      const response = await api.getMenu(null);
+
+      setAllMenu(response.menu);
       setMenu(response.menu);
-      
-      const uniqueCategories = [...new Set(response.menu.map(item => item.category))];
+
+      const uniqueCategories = [
+        ...new Set(response.menu.map((item) => item.category)),
+      ];
       setCategories(uniqueCategories);
     } catch (error) {
-      console.error('Failed to fetch menu:', error);
+      console.error("Failed to fetch menu:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+  if (!category) {
+    setMenu(allMenu);
+  } else {
+    setMenu(allMenu.filter(item => item.category === category));
+  }
+}, [category, allMenu]);
+
   const handleAddToCart = (dish) => {
-    setCartItems(prev => {
-      const existingItem = prev.find(item => item.id === dish.id);
+    setCartItems((prev) => {
+      const existingItem = prev.find((item) => item.id === dish.id);
       if (existingItem) {
-        return prev.map(item =>
-          item.id === dish.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+        return prev.map((item) =>
+          item.id === dish.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
       return [...prev, { ...dish, quantity: 1 }];
@@ -52,11 +64,11 @@ export const Menu = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar cartCount={cartCount} onCartClick={() => setIsCartOpen(true)} />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Our Menu</h1>
-          
+
           <div className="flex items-center space-x-2">
             <label className="text-sm font-medium text-gray-700">
               Filter by category:

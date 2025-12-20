@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import toast from 'react-hot-toast';
 
-export const IngredientForm = ({ onSuccess, onClose }) => {
+export const IngredientForm = ({ ingredient, onSuccess, onClose }) => {
+  const isEditMode = !!ingredient;
+  
   const [formData, setFormData] = useState({
     name: '',
     unit: '',
@@ -11,6 +13,18 @@ export const IngredientForm = ({ onSuccess, onClose }) => {
     cost: 0,
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (ingredient) {
+      setFormData({
+        name: ingredient.name || '',
+        unit: ingredient.unit || '',
+        quantity: ingredient.quantity || 0,
+        reorderLevel: ingredient.reorderLevel || 0,
+        cost: ingredient.cost || 0,
+      });
+    }
+  }, [ingredient]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,12 +49,23 @@ export const IngredientForm = ({ onSuccess, onClose }) => {
 
     setLoading(true);
     try {
-      await api.addIngredient(formData);
-      toast.success('Ingredient added successfully');
+      if (isEditMode) {
+        const updateData = {
+          unit: formData.unit,
+          quantity: formData.quantity,
+          reorderLevel: formData.reorderLevel,
+          cost: formData.cost,
+        };
+        await api.updateIngredient(ingredient.name, updateData);
+        toast.success('Ingredient updated successfully');
+      } else {
+        await api.addIngredient(formData);
+        toast.success('Ingredient added successfully');
+      }
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('Failed to add ingredient:', error);
+      console.error('Failed to save ingredient:', error);
     } finally {
       setLoading(false);
     }
@@ -50,7 +75,9 @@ export const IngredientForm = ({ onSuccess, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Add New Ingredient</h2>
+          <h2 className="text-2xl font-bold">
+            {isEditMode ? 'Edit Ingredient' : 'Add New Ingredient'}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -71,7 +98,8 @@ export const IngredientForm = ({ onSuccess, onClose }) => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isEditMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
               required
             />
           </div>
@@ -150,7 +178,7 @@ export const IngredientForm = ({ onSuccess, onClose }) => {
               disabled={loading}
               className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
             >
-              {loading ? 'Adding...' : 'Add Ingredient'}
+              {loading ? (isEditMode ? 'Updating...' : 'Adding...') : (isEditMode ? 'Update Ingredient' : 'Add Ingredient')}
             </button>
           </div>
         </form>

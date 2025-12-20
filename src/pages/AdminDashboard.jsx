@@ -3,6 +3,7 @@ import { Navbar } from '../components/Navbar';
 import { IngredientForm } from '../components/IngredientForm';
 import { DishForm } from '../components/DishForm';
 import { api } from '../services/api';
+import toast from 'react-hot-toast';
 
 export const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('ingredients');
@@ -11,6 +12,8 @@ export const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showIngredientForm, setShowIngredientForm] = useState(false);
   const [showDishForm, setShowDishForm] = useState(false);
+  const [editingIngredient, setEditingIngredient] = useState(null);
+  const [editingDish, setEditingDish] = useState(null);
 
   useEffect(() => {
     if (activeTab === 'ingredients') {
@@ -42,6 +45,50 @@ export const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteIngredient = async (ingredientName) => {
+    if (window.confirm(`Are you sure you want to delete ${ingredientName}?`)) {
+      try {
+        await api.deleteIngredient(ingredientName);
+        toast.success('Ingredient deleted successfully');
+        fetchIngredients();
+      } catch (error) {
+        console.error('Failed to delete ingredient:', error);
+      }
+    }
+  };
+
+  const handleDeleteDish = async (dishName) => {
+    if (window.confirm(`Are you sure you want to delete ${dishName}?`)) {
+      try {
+        await api.deleteDish(dishName);
+        toast.success('Dish deleted successfully');
+        fetchDishes();
+      } catch (error) {
+        console.error('Failed to delete dish:', error);
+      }
+    }
+  };
+
+  const handleEditIngredient = (ingredient) => {
+    setEditingIngredient(ingredient);
+    setShowIngredientForm(true);
+  };
+
+  const handleEditDish = (dish) => {
+    setEditingDish(dish);
+    setShowDishForm(true);
+  };
+
+  const handleCloseIngredientForm = () => {
+    setShowIngredientForm(false);
+    setEditingIngredient(null);
+  };
+
+  const handleCloseDishForm = () => {
+    setShowDishForm(false);
+    setEditingDish(null);
   };
 
   return (
@@ -119,11 +166,14 @@ export const AdminDashboard = () => {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
                           </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {ingredients.map((ingredient) => (
-                          <tr key={ingredient.id}>
+                          <tr key={ingredient.name}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               {ingredient.name}
                             </td>
@@ -149,6 +199,20 @@ export const AdminDashboard = () => {
                                   In Stock
                                 </span>
                               )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <button
+                                onClick={() => handleEditIngredient(ingredient)}
+                                className="text-blue-600 hover:text-blue-900 mr-4"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteIngredient(ingredient.name)}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                Delete
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -180,7 +244,7 @@ export const AdminDashboard = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {dishes.map((dish) => (
-                      <div key={dish.id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={dish.name} className="border border-gray-200 rounded-lg p-4">
                         {dish.imageUrl && (
                           <img
                             src={dish.imageUrl}
@@ -190,7 +254,7 @@ export const AdminDashboard = () => {
                         )}
                         <h3 className="font-semibold text-lg mb-1">{dish.name}</h3>
                         <p className="text-gray-600 text-sm mb-2">{dish.description}</p>
-                        <div className="flex justify-between items-center">
+                        <div className="flex justify-between items-center mb-2">
                           <span className="text-lg font-bold text-green-600">
                             ${dish.price.toFixed(2)}
                           </span>
@@ -202,10 +266,24 @@ export const AdminDashboard = () => {
                             {dish.available ? 'Available' : 'Unavailable'}
                           </span>
                         </div>
-                        <div className="mt-2">
+                        <div className="mb-3">
                           <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                             {dish.category}
                           </span>
+                        </div>
+                        <div className="flex gap-2 pt-2 border-t border-gray-200">
+                          <button
+                            onClick={() => handleEditDish(dish)}
+                            className="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded text-sm hover:bg-blue-700"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDish(dish.name)}
+                            className="flex-1 bg-red-600 text-white px-3 py-1.5 rounded text-sm hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -219,15 +297,23 @@ export const AdminDashboard = () => {
 
       {showIngredientForm && (
         <IngredientForm
-          onSuccess={fetchIngredients}
-          onClose={() => setShowIngredientForm(false)}
+          ingredient={editingIngredient}
+          onSuccess={() => {
+            fetchIngredients();
+            handleCloseIngredientForm();
+          }}
+          onClose={handleCloseIngredientForm}
         />
       )}
 
       {showDishForm && (
         <DishForm
-          onSuccess={fetchDishes}
-          onClose={() => setShowDishForm(false)}
+          dish={editingDish}
+          onSuccess={() => {
+            fetchDishes();
+            handleCloseDishForm();
+          }}
+          onClose={handleCloseDishForm}
         />
       )}
     </div>

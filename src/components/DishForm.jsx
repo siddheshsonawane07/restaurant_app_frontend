@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 import toast from 'react-hot-toast';
 
-export const DishForm = ({ onSuccess, onClose }) => {
+export const DishForm = ({ dish, onSuccess, onClose }) => {
+  const isEditMode = !!dish;
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -20,6 +22,28 @@ export const DishForm = ({ onSuccess, onClose }) => {
   useEffect(() => {
     fetchIngredients();
   }, []);
+
+  useEffect(() => {
+    if (dish) {
+      setFormData({
+        name: dish.name || '',
+        description: dish.description || '',
+        price: dish.price || 0,
+        category: dish.category || '',
+        preparationTime: dish.preparationTime || 0,
+        imageUrl: dish.imageUrl || '',
+        available: dish.available !== undefined ? dish.available : true,
+      });
+
+      if (dish.ingredients && Array.isArray(dish.ingredients)) {
+        const selected = {};
+        dish.ingredients.forEach(ing => {
+          selected[ing.ingredientId] = ing.quantity;
+        });
+        setSelectedIngredients(selected);
+      }
+    }
+  }, [dish]);
 
   const fetchIngredients = async () => {
     try {
@@ -42,22 +66,22 @@ export const DishForm = ({ onSuccess, onClose }) => {
     }));
   };
 
-  const handleIngredientToggle = (ingredientId) => {
+  const handleIngredientToggle = (ingredientName) => {
     setSelectedIngredients(prev => {
       const updated = { ...prev };
-      if (updated[ingredientId]) {
-        delete updated[ingredientId];
+      if (updated[ingredientName]) {
+        delete updated[ingredientName];
       } else {
-        updated[ingredientId] = 0;
+        updated[ingredientName] = 0;
       }
       return updated;
     });
   };
 
-  const handleIngredientQuantity = (ingredientId, quantity) => {
+  const handleIngredientQuantity = (ingredientName, quantity) => {
     setSelectedIngredients(prev => ({
       ...prev,
-      [ingredientId]: parseFloat(quantity) || 0,
+      [ingredientName]: parseFloat(quantity) || 0,
     }));
   };
 
@@ -93,12 +117,26 @@ export const DishForm = ({ onSuccess, onClose }) => {
 
     setLoading(true);
     try {
-      await api.addDish(dishData);
-      toast.success('Dish added successfully');
+      if (isEditMode) {
+        const updateData = {
+          description: formData.description,
+          price: formData.price,
+          category: formData.category,
+          preparationTime: formData.preparationTime,
+          imageUrl: formData.imageUrl,
+          available: formData.available,
+          ingredients: ingredientsList,
+        };
+        await api.updateDish(dish.name, updateData);
+        toast.success('Dish updated successfully');
+      } else {
+        await api.addDish(dishData);
+        toast.success('Dish added successfully');
+      }
       onSuccess();
       onClose();
     } catch (error) {
-      console.error('Failed to add dish:', error);
+      console.error('Failed to save dish:', error);
     } finally {
       setLoading(false);
     }
@@ -108,7 +146,9 @@ export const DishForm = ({ onSuccess, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
       <div className="bg-white rounded-lg p-6 w-full max-w-2xl m-4">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Add New Dish</h2>
+          <h2 className="text-2xl font-bold">
+            {isEditMode ? 'Edit Dish' : 'Add New Dish'}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -130,7 +170,8 @@ export const DishForm = ({ onSuccess, onClose }) => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isEditMode}
+                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 required
               />
             </div>
@@ -232,21 +273,21 @@ export const DishForm = ({ onSuccess, onClose }) => {
             ) : (
               <div className="space-y-2 max-h-60 overflow-y-auto border border-gray-200 rounded p-3">
                 {ingredients.map((ingredient) => (
-                  <div key={ingredient.id} className="flex items-center space-x-3">
+                  <div key={ingredient.name} className="flex items-center space-x-3">
                     <input
                       type="checkbox"
-                      checked={!!selectedIngredients[ingredient.id]}
-                      onChange={() => handleIngredientToggle(ingredient.id)}
+                      checked={!!selectedIngredients[ingredient.name]}
+                      onChange={() => handleIngredientToggle(ingredient.name)}
                       className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
                     />
                     <label className="flex-1 text-sm">
                       {ingredient.name} ({ingredient.unit})
                     </label>
-                    {selectedIngredients[ingredient.id] !== undefined && (
+                    {selectedIngredients[ingredient.name] !== undefined && (
                       <input
                         type="number"
-                        value={selectedIngredients[ingredient.id]}
-                        onChange={(e) => handleIngredientQuantity(ingredient.id, e.target.value)}
+                        value={selectedIngredients[ingredient.name]}
+                        onChange={(e) => handleIngredientQuantity(ingredient.name, e.target.value)}
                         min="0"
                         step="0.01"
                         placeholder="Quantity"
@@ -272,7 +313,7 @@ export const DishForm = ({ onSuccess, onClose }) => {
               disabled={loading || ingredients.length === 0}
               className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed"
             >
-              {loading ? 'Adding...' : 'Add Dish'}
+              {loading ? (isEditMode ? 'Updating...' : 'Adding...') : (isEditMode ? 'Update Dish' : 'Add Dish')}
             </button>
           </div>
         </form>

@@ -1,9 +1,9 @@
 import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
+import {
+  getAuth,
+  signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged 
+  onAuthStateChanged,
 } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -19,23 +19,27 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 export const loginWithEmail = async (email, password) => {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  const token = await userCredential.user.getIdToken();
-  localStorage.setItem('authToken', token);
+  const userCredential = await signInWithEmailAndPassword(
+    auth,
+    email,
+    password
+  );
+
+  // IMPORTANT: force token refresh so custom claims are included
+  await userCredential.user.getIdToken(true);
+
   return userCredential.user;
 };
 
 export const logout = async () => {
   await signOut(auth);
-  localStorage.removeItem('authToken');
 };
 
 export const getCurrentToken = async () => {
   const user = auth.currentUser;
-  if (user) {
-    return await user.getIdToken(true);
-  }
-  return null;
+  if (!user) return null;
+
+  return await user.getIdToken(true);
 };
 
 export const onAuthChange = (callback) => {

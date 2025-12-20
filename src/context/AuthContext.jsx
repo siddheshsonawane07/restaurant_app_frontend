@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { onAuthChange, loginWithEmail, logout as firebaseLogout } from '../services/firebase';
-import { ADMIN_UID } from '../utils/constants';
 
 const AuthContext = createContext(null);
 
@@ -15,10 +14,26 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [admin, setAdmin] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthChange((firebaseUser) => {
+    const unsubscribe = onAuthChange(async (firebaseUser) => {
+      if (!firebaseUser) {
+        setUser(null);
+        setAdmin(false);
+        setLoading(false);
+        return;
+      }
+
+      // 🔥 IMPORTANT: read custom claims
+      const tokenResult = await firebaseUser.getIdTokenResult(true);
+
+      const isAdmin =
+        tokenResult.claims.admin === true ||
+        tokenResult.claims.role === 'admin';
+
       setUser(firebaseUser);
+      setAdmin(isAdmin);
       setLoading(false);
     });
 
@@ -33,10 +48,15 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await firebaseLogout();
     setUser(null);
+    setAdmin(false);
   };
 
+  /**
+   * SAME FUNCTION SIGNATURE AS BEFORE
+   * but now checks Firebase custom claims
+   */
   const isAdmin = () => {
-    return user && user.uid === ADMIN_UID;
+    return admin === true;
   };
 
   const value = {
@@ -44,7 +64,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     logout,
-    isAdmin,
+    isAdmin, // ✅ unchanged usage
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

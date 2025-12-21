@@ -34,11 +34,13 @@ export const AdminDashboard = () => {
   const fetchDashboard = async () => {
     setLoading(true);
     try {
-      const response = await api.getAdminDashboard();
-      setDashboard(response);
+      console.log('Fetching dashboard from:', `${import.meta.env.VITE_API_BASE_URL}/api/admin/dashboard`);
+      const data = await api.getAdminDashboard();
+      console.log('Dashboard data:', data);
+      setDashboard(data);
     } catch (error) {
       console.error('Failed to load dashboard:', error);
-      toast.error('Failed to load dashboard data');
+      toast.error(`Failed to load dashboard: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -47,11 +49,13 @@ export const AdminDashboard = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const response = await api.getAllOrders();
-      setOrders(response.orders);
+      console.log('Fetching orders from:', `${import.meta.env.VITE_API_BASE_URL}/api/admin/orders`);
+      const data = await api.getAllOrders();
+      console.log('Orders data:', data);
+      setOrders(data.orders || []);
     } catch (error) {
       console.error('Failed to fetch orders:', error);
-      toast.error('Failed to load orders');
+      toast.error(`Failed to load orders: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -64,6 +68,7 @@ export const AdminDashboard = () => {
       setIngredients(response.ingredients);
     } catch (error) {
       console.error('Failed to fetch ingredients:', error);
+      toast.error('Failed to load ingredients');
     } finally {
       setLoading(false);
     }
@@ -76,6 +81,7 @@ export const AdminDashboard = () => {
       setDishes(response.menu);
     } catch (error) {
       console.error('Failed to fetch dishes:', error);
+      toast.error('Failed to load dishes');
     } finally {
       setLoading(false);
     }
@@ -83,6 +89,7 @@ export const AdminDashboard = () => {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
+      console.log('Updating order status:', { orderId, newStatus });
       await api.updateOrderStatus(orderId, { newStatus });
       toast.success(`Order ${newStatus}`);
       fetchOrders();
@@ -90,7 +97,8 @@ export const AdminDashboard = () => {
         fetchDashboard();
       }
     } catch (error) {
-      toast.error('Failed to update order');
+      console.error('Failed to update order:', error);
+      toast.error(`Failed to update order: ${error.message}`);
     }
   };
 
@@ -100,8 +108,8 @@ export const AdminDashboard = () => {
       setSelectedOrder(orderDetails);
       setShowOrderDetails(true);
     } catch (error) {
-      toast.error('Failed to fetch order details');
       console.error('Error fetching order details:', error);
+      toast.error('Failed to fetch order details');
     }
   };
 
@@ -113,6 +121,7 @@ export const AdminDashboard = () => {
         fetchIngredients();
       } catch (error) {
         console.error('Failed to delete ingredient:', error);
+        toast.error('Failed to delete ingredient');
       }
     }
   };
@@ -125,6 +134,7 @@ export const AdminDashboard = () => {
         fetchDishes();
       } catch (error) {
         console.error('Failed to delete dish:', error);
+        toast.error('Failed to delete dish');
       }
     }
   };

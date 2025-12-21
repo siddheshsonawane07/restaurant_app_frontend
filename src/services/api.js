@@ -146,60 +146,60 @@ export const api = {
       return handleError(error);
     }
   },
-
   // Manage Orders - Get all orders list
   getAllOrders: async () => {
-    const headers = await getAuthHeaders();
-    const response = await fetch(`${API_BASE_URL}/api/admin/orders`, {
-      method: "GET",
-      headers,
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/orders`, {
+        method: "GET",
+        headers: {
+          ...(await getAuthHeader()),
+        },
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to fetch orders");
+      return await handleResponse(response);
+    } catch (error) {
+      return handleError(error);
     }
-
-    return response.json();
   },
 
   // View Details Modal - Get single order details
   getOrderDetails: async (orderId) => {
-    const headers = await getAuthHeaders();
-    const response = await fetch(
-      `${API_BASE_URL}/api/admin/orders/${orderId}`,
-      {
-        method: "GET",
-        headers,
-      }
-    );
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/orders/${orderId}`,
+        {
+          method: "GET",
+          headers: {
+            ...(await getAuthHeader()),
+          },
+        }
+      );
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to fetch order details");
+      return await handleResponse(response);
+    } catch (error) {
+      return handleError(error);
     }
-
-    return response.json();
   },
 
   // Update order status
   updateOrderStatus: async (orderId, data) => {
-    const headers = await getAuthHeaders();
-    const response = await fetch(
-      `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
-      {
-        method: "PATCH",
-        headers,
-        body: JSON.stringify(data),
-      }
-    );
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            ...(await getAuthHeader()),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || "Failed to update order status");
+      return await handleResponse(response);
+    } catch (error) {
+      return handleError(error);
     }
-
-    return response.json();
   },
 
   // ADMIN – DISHES

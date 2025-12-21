@@ -48,15 +48,19 @@ export const Menu = () => {
 
   const handleAddToCart = (dish) => {
     setCartItems((prev) => {
-      const existingItem = prev.find((item) => item.id === dish.id);
+      const existingItem = prev.find((item) => item.name === dish.name);
       if (existingItem) {
         return prev.map((item) =>
-          item.id === dish.id ? { ...item, quantity: item.quantity + 1 } : item
+          item.name === dish.name ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
       return [...prev, { ...dish, quantity: 1 }];
     });
     toast.success(`${dish.name} added to cart`);
+  };
+
+  const handleOrderPlaced = () => {
+    setCartItems([]);
   };
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -113,6 +117,7 @@ export const Menu = () => {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         items={cartItems}
+        onOrderPlaced={handleOrderPlaced}
       />
     </div>
   );

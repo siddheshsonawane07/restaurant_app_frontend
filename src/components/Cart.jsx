@@ -1,7 +1,66 @@
-export const Cart = ({ isOpen, onClose, items }) => {
+import { useState } from "react";
+import { api } from "../services/api";
+import { auth } from "../services/firebase";
+import toast from "react-hot-toast";
+
+export const Cart = ({ isOpen, onClose, items, onOrderPlaced }) => {
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+
   if (!isOpen) return null;
 
   const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  const handlePlaceOrder = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      toast.error("Please login to place an order");
+      return;
+    }
+
+    if (items.length === 0) {
+      toast.error("Your cart is empty");
+      return;
+    }
+
+    setIsPlacingOrder(true);
+
+    try {
+      const orderData = {
+        items: items.map(item => ({
+          dishName: item.name,
+          quantity: item.quantity
+        }))
+      };
+
+      const result = await api.placeOrder(orderData);
+
+      if (result.adjustments && result.adjustments.length > 0) {
+        const adjustmentMessages = result.adjustments.map(adj => 
+          `${adj.dishName}: ${adj.requestedQuantity} → ${adj.fulfilledQuantity}`
+        ).join(', ');
+        
+        toast.success(
+          `Order placed! Some items adjusted: ${adjustmentMessages}`,
+          { duration: 5000 }
+        );
+      } else {
+        toast.success(
+          `Order placed successfully! Order ID: ${result.orderId}`,
+          { duration: 4000 }
+        );
+      }
+
+      if (onOrderPlaced) {
+        onOrderPlaced();
+      }
+
+      onClose();
+    } catch (error) {
+      console.error("Failed to place order:", error);
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
 
   return (
     <>
@@ -40,7 +99,7 @@ export const Cart = ({ isOpen, onClose, items }) => {
             <>
               <div className="space-y-4 mb-6">
                 {items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center border-b pb-3">
+                  <div key={item.name} className="flex justify-between items-center border-b pb-3">
                     <div className="flex-1">
                       <h3 className="font-semibold">{item.name}</h3>
                       <p className="text-sm text-gray-600">
@@ -64,9 +123,27 @@ export const Cart = ({ isOpen, onClose, items }) => {
                   </span>
                 </div>
                 
-                <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800">
-                  Order placement feature coming soon!
-                </div>
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={isPlacingOrder}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                >
+                  {isPlacingOrder ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Placing Order...
+                    </span>
+                  ) : (
+                    'Place Order'
+                  )}
+                </button>
+
+                <p className="text-xs text-gray-500 text-center mt-3">
+                  Your order will be pending until admin approval
+                </p>
               </div>
             </>
           )}

@@ -14,10 +14,27 @@ export const Navbar = ({ cartCount = 0, onCartClick }) => {
     <nav className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex items-center">
+          <div className="flex items-center space-x-8">
             <Link to={isAdmin() ? '/admin/dashboard' : '/menu'} className="text-xl font-bold text-gray-800">
               Restaurant Manager
             </Link>
+            
+            {user && !isAdmin() && (
+              <div className="flex items-center space-x-4">
+                <Link
+                  to="/menu"
+                  className="text-gray-600 hover:text-gray-800 font-medium"
+                >
+                  Menu
+                </Link>
+                <Link
+                  to="/myorders"
+                  className="text-gray-600 hover:text-gray-800 font-medium"
+                >
+                  My Orders
+                </Link>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center space-x-4">
@@ -46,7 +63,7 @@ export const Navbar = ({ cartCount = 0, onCartClick }) => {
                 )}
               </button>
             )}
-
+            
             {user && (
               <div className="flex items-center space-x-3">
                 <span className="text-sm text-gray-600">{user.email}</span>

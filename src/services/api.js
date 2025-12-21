@@ -65,7 +65,22 @@ export const api = {
       return handleError(error);
     }
   },
-
+  // CUSTOMER - GET ORDERS
+  getCustomerOrders: async () => {
+    try {   
+      const response = await fetch(`${API_BASE_URL}/api/customer/orders`, {
+        method: "GET",
+        headers: {    
+          "Content-Type": "application/json",
+          ...(await getAuthHeader()),
+        },
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      return handleError(error);
+    } 
+  },
+  
   // ADMIN – INGREDIENTS
   getIngredients: async () => {
     try {

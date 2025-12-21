@@ -6,6 +6,7 @@ import { Login } from './pages/Login';
 import { AdminLogin } from './pages/AdminLogin';
 import { Menu } from './pages/Menu';
 import { AdminDashboard } from './pages/AdminDashboard';
+import CustomerOrders from './pages/CustomerOrders';
 
 function App() {
   return (
@@ -34,6 +35,13 @@ function App() {
             }
           />
           
+          <Route path='/myorders'
+            element={
+              <ProtectedRoute>
+                <CustomerOrders />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

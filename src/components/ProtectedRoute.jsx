@@ -20,5 +20,7 @@ export const ProtectedRoute = ({ children, requireAdmin = false }) => {
     return <Navigate to="/menu" replace />;
   }
 
+  <Navigate to="/" replace />;
+
   return children;
 };

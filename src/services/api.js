@@ -49,6 +49,22 @@ export const api = {
     }
   },
 
+  getAllMenu: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/menu`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(await getAuthHeader()),
+        },
+      });
+      const responseData = await handleResponse(response);
+      return responseData;
+    } catch (error) {
+      return handleError(error);
+    }
+  },
+
   // CUSTOMER - ORDERS
   placeOrder: async (data) => {
     try {
@@ -67,10 +83,10 @@ export const api = {
   },
   // CUSTOMER - GET ORDERS
   getCustomerOrders: async () => {
-    try {   
+    try {
       const response = await fetch(`${API_BASE_URL}/api/customer/orders`, {
         method: "GET",
-        headers: {    
+        headers: {
           "Content-Type": "application/json",
           ...(await getAuthHeader()),
         },
@@ -78,9 +94,9 @@ export const api = {
       return await handleResponse(response);
     } catch (error) {
       return handleError(error);
-    } 
+    }
   },
-  
+
   // ADMIN – INGREDIENTS
   getIngredients: async () => {
     try {

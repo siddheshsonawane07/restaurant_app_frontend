@@ -273,13 +273,13 @@ export const AdminDashboard = () => {
                               {order.status}
                             </span>
                           </div>
-
+{/* 
                           <button
                             onClick={() => handleViewOrderDetails(order.orderId)}
                             className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                           >
                             View Full Details
-                          </button>
+                          </button> */}
                         </div>
 
                         <div className="bg-gray-50 rounded p-3 mb-3">

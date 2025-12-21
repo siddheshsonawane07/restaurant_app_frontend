@@ -187,7 +187,7 @@ export const api = {
       const response = await fetch(
         `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
         {
-          method: "PATCH",
+          method: "PUT",
           headers: {
             ...(await getAuthHeader()),
             "Content-Type": "application/json",

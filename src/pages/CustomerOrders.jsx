@@ -3,8 +3,6 @@ import { Navbar } from '../components/Navbar';
 import { api } from '../services/api';
 import toast from 'react-hot-toast';
 
-
-
 const CustomerOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +43,8 @@ const CustomerOrders = () => {
         return 'bg-gray-100 text-gray-800';
       case 'rejected':
         return 'bg-red-100 text-red-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-900';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -74,6 +74,7 @@ const CustomerOrders = () => {
               <option value="ready">Ready</option>
               <option value="completed">Completed</option>
               <option value="rejected">Rejected</option>
+              <option value="cancelled">Cancelled</option>
             </select>
           </div>
         </div>

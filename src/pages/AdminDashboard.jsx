@@ -19,6 +19,7 @@ export const AdminDashboard = () => {
   const [showDishForm, setShowDishForm] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState(null);
   const [editingDish, setEditingDish] = useState(null);
+  const [showAgent, setShowAgent] = useState(false);
 
   useEffect(() => {
     if (activeTab === "dashboard") {
@@ -29,6 +30,8 @@ export const AdminDashboard = () => {
       fetchIngredients();
     } else if (activeTab === "dishes") {
       fetchDishes();
+    } else if (activeTab === "agent") {
+      handleOpenAgent();
     }
   }, [activeTab]);
 
@@ -109,16 +112,16 @@ export const AdminDashboard = () => {
     }
   };
 
-  const handleViewOrderDetails = async (orderId) => {
-    try {
-      const orderDetails = await api.getOrderDetails(orderId);
-      setSelectedOrder(orderDetails);
-      setShowOrderDetails(true);
-    } catch (error) {
-      console.error("Error fetching order details:", error);
-      toast.error("Failed to fetch order details");
-    }
-  };
+  // const handleViewOrderDetails = async (orderId) => {
+  //   try {
+  //     const orderDetails = await api.getOrderDetails(orderId);
+  //     setSelectedOrder(orderDetails);
+  //     setShowOrderDetails(true);
+  //   } catch (error) {
+  //     console.error("Error fetching order details:", error);
+  //     toast.error("Failed to fetch order details");
+  //   }
+  // };
 
   const handleDeleteIngredient = async (ingredientName) => {
     if (window.confirm(`Are you sure you want to delete ${ingredientName}?`)) {
@@ -166,6 +169,12 @@ export const AdminDashboard = () => {
     setEditingDish(null);
   };
 
+  const handleOpenAgent = () => {
+    // Placeholder for future functionality
+    setShowAgent(true);
+  }
+
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -175,48 +184,54 @@ export const AdminDashboard = () => {
           Admin Dashboard
         </h1>
 
+
         <div className="bg-white rounded-lg shadow">
           <div className="border-b border-gray-200">
             <nav className="flex -mb-px">
               <button
                 onClick={() => setActiveTab("dashboard")}
-                className={`py-4 px-6 text-sm font-medium ${
-                  activeTab === "dashboard"
-                    ? "border-b-2 border-blue-500 text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className={`py-4 px-6 text-sm font-medium ${activeTab === "dashboard"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+                  }`}
               >
                 Dashboard
               </button>
               <button
                 onClick={() => setActiveTab("orders")}
-                className={`py-4 px-6 text-sm font-medium ${
-                  activeTab === "orders"
-                    ? "border-b-2 border-blue-500 text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className={`py-4 px-6 text-sm font-medium ${activeTab === "orders"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+                  }`}
               >
                 Manage Orders
               </button>
               <button
                 onClick={() => setActiveTab("ingredients")}
-                className={`py-4 px-6 text-sm font-medium ${
-                  activeTab === "ingredients"
-                    ? "border-b-2 border-blue-500 text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className={`py-4 px-6 text-sm font-medium ${activeTab === "ingredients"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+                  }`}
               >
                 Manage Ingredients
               </button>
               <button
                 onClick={() => setActiveTab("dishes")}
-                className={`py-4 px-6 text-sm font-medium ${
-                  activeTab === "dishes"
-                    ? "border-b-2 border-blue-500 text-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
+                className={`py-4 px-6 text-sm font-medium ${activeTab === "dishes"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+                  }`}
               >
                 Manage Dishes
+              </button>
+              <button
+                onClick={() => setActiveTab("agent")}
+                className={`py-4 px-6 text-sm font-medium ${activeTab === "agent"
+                  ? "border-b-2 border-blue-500 text-blue-600"
+                  : "text-gray-500 hover:text-gray-700"
+                  }`}
+              >
+                AI Agent
               </button>
             </nav>
           </div>
@@ -280,15 +295,14 @@ export const AdminDashboard = () => {
                               {order.customerName}
                             </p> */}
                             <span
-                              className={`inline-flex mt-2 text-xs leading-5 font-semibold rounded-full px-2 py-1 capitalize ${
-                                order.status === "pending"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : order.status === "accepted"
+                              className={`inline-flex mt-2 text-xs leading-5 font-semibold rounded-full px-2 py-1 capitalize ${order.status === "pending"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : order.status === "accepted"
                                   ? "bg-blue-100 text-blue-800"
                                   : order.status === "preparing"
-                                  ? "bg-purple-100 text-purple-800"
-                                  : "bg-green-100 text-green-800"
-                              }`}
+                                    ? "bg-purple-100 text-purple-800"
+                                    : "bg-green-100 text-green-800"
+                                }`}
                             >
                               {order.status}
                             </span>
@@ -345,6 +359,7 @@ export const AdminDashboard = () => {
                               >
                                 Accept
                               </button>
+
                               <button
                                 onClick={() =>
                                   updateOrderStatus(order.orderId, "rejected")
@@ -366,7 +381,11 @@ export const AdminDashboard = () => {
                               Start Preparing
                             </button>
                           )}
-
+                          {order.status === "preparing" || order.status === "accepted" || order.status === "pending" || order.status === "ready" || order.status === "completed" ? (
+                            <button onClick={() => updateOrderStatus(order.orderId, "cancelled")} className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                              Cancel Order
+                            </button>
+                          ) : null}
                           {order.status === "preparing" && (
                             <button
                               onClick={() =>
@@ -390,11 +409,11 @@ export const AdminDashboard = () => {
                           )}
 
                           {(order.status === "completed" ||
-                            order.status === "rejected") && (
-                            <span className="text-sm text-gray-500 italic">
-                              Order {order.status}
-                            </span>
-                          )}
+                            order.status === "rejected" || order.status === "cancelled") && (
+                              <span className="text-sm text-gray-500 italic">
+                                Order {order.status}
+                              </span>
+                            )}
                         </div>
                       </div>
                     ))}
@@ -473,7 +492,7 @@ export const AdminDashboard = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               {ingredient.reorderLevel &&
-                              ingredient.quantity < ingredient.reorderLevel ? (
+                                ingredient.quantity < ingredient.reorderLevel ? (
                                 <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                   Low Stock
                                 </span>
@@ -507,7 +526,10 @@ export const AdminDashboard = () => {
                 )}
               </div>
             )}
-
+            {activeTab === "agent" && (
+              <div>
+                <h2 className="text-xl font-semibold mb-6">AI Agent</h2> </div>)
+            }
             {activeTab === "dishes" && (
               <div>
                 <div className="flex justify-between items-center mb-6">
@@ -553,11 +575,10 @@ export const AdminDashboard = () => {
                             ${dish.price.toFixed(2)}
                           </span>
                           <span
-                            className={`text-xs px-2 py-1 rounded ${
-                              dish.available
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
+                            className={`text-xs px-2 py-1 rounded ${dish.available
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                              }`}
                           >
                             {dish.available ? "Available" : "Unavailable"}
                           </span>
@@ -587,6 +608,7 @@ export const AdminDashboard = () => {
                 )}
               </div>
             )}
+
           </div>
         </div>
       </div>
@@ -662,17 +684,16 @@ export const AdminDashboard = () => {
                   <p className="text-sm mt-1">
                     <span className="font-medium">Status:</span>
                     <span
-                      className={`ml-2 inline-flex text-xs leading-5 font-semibold rounded-full px-2 py-1 capitalize ${
-                        selectedOrder.status === "pending"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : selectedOrder.status === "accepted"
+                      className={`ml-2 inline-flex text-xs leading-5 font-semibold rounded-full px-2 py-1 capitalize ${selectedOrder.status === "pending"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : selectedOrder.status === "accepted"
                           ? "bg-blue-100 text-blue-800"
                           : selectedOrder.status === "preparing"
-                          ? "bg-purple-100 text-purple-800"
-                          : selectedOrder.status === "ready"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
+                            ? "bg-purple-100 text-purple-800"
+                            : selectedOrder.status === "ready"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-gray-100 text-gray-800"
+                        }`}
                     >
                       {selectedOrder.status}
                     </span>
@@ -781,6 +802,8 @@ export const AdminDashboard = () => {
           </div>
         </div>
       )}
+
+
     </div>
   );
 };

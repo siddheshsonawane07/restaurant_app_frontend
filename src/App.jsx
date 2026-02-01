@@ -8,7 +8,7 @@ import { Menu } from './pages/Menu';
 import { AdminDashboard } from './pages/AdminDashboard';
 import CustomerOrders from './pages/CustomerOrders';
 
-function App() {
+function  App() {
   return (
     <BrowserRouter>
       <AuthProvider>

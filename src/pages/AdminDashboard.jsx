@@ -7,7 +7,7 @@ import { api } from "../services/api";
 import toast from "react-hot-toast";
 
 export const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("agent");
   const [ingredients, setIngredients] = useState([]);
   const [dishes, setDishes] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -528,7 +528,11 @@ export const AdminDashboard = () => {
             )}
             {activeTab === "agent" && (
               <div>
-                <h2 className="text-xl font-semibold mb-6">AI Agent</h2> </div>)
+                <h2 className="text-xl font-semibold mb-6">AI Agent</h2>
+                <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                  Review Inventory 
+                  </button>
+                 </div>)
             }
             {activeTab === "dishes" && (
               <div>
